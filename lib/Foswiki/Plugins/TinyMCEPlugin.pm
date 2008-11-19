@@ -12,7 +12,7 @@
 # GNU General Public License for more details, published at
 # http://www.gnu.org/copyleft/gpl.html
 
-package TWiki::Plugins::TinyMCEPlugin;
+package Foswiki::Plugins::TinyMCEPlugin;
 
 use strict;
 
@@ -23,17 +23,17 @@ $VERSION = '$Rev$';
 $RELEASE = '03 Aug 2008';
 $SHORTDESCRIPTION = 'Integration of TinyMCE with WysiwygPlugin';
 
-use TWiki::Func;
+use Foswiki::Func;
 
 my $query;
 # Info about browser type
 my %browserInfo;
 
 sub initPlugin {
-    $query = TWiki::Func::getCgiQuery();
+    $query = Foswiki::Func::getCgiQuery();
     return 0 unless $query;
-    unless( $TWiki::cfg{Plugins}{WysiwygPlugin}{Enabled} ) {
-        TWiki::Func::writeWarning("TinyMCEPlugin is enabled but WysiwygPlugin is not enabled. Both plugins must be installed and enabled for TinyMCE.");
+    unless( $Foswiki::cfg{Plugins}{WysiwygPlugin}{Enabled} ) {
+        Foswiki::Func::writeWarning("TinyMCEPlugin is enabled but WysiwygPlugin is not enabled. Both plugins must be installed and enabled for TinyMCE.");
         return 0;
     }
 
@@ -57,20 +57,20 @@ sub initPlugin {
 }
 
 sub _notAvailable {
-    return "Disabled by preference '".TWiki::Func::getPreferencesValue('TINYMCEPLUGIN_DISABLE')."'" if
-      TWiki::Func::getPreferencesFlag('TINYMCEPLUGIN_DISABLE');
+    return "Disabled by preference '".Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_DISABLE')."'" if
+      Foswiki::Func::getPreferencesFlag('TINYMCEPLUGIN_DISABLE');
 
     # Disable TinyMCE if we are on a specialised edit skin
-    my $skin = TWiki::Func::getPreferencesValue('WYSIWYGPLUGIN_WYSIWYGSKIN');
+    my $skin = Foswiki::Func::getPreferencesValue('WYSIWYGPLUGIN_WYSIWYGSKIN');
     return "$skin is active"
-      if( $skin && TWiki::Func::getSkin() =~ /\b$skin\b/o );
+      if( $skin && Foswiki::Func::getSkin() =~ /\b$skin\b/o );
 
     return "No browser" unless $query;
 
     return "Disabled by URL parameter" if $query->param('nowysiwyg');
 
     # Check the client browser to see if it is blacklisted
-    my $ua = TWiki::Func::getPreferencesValue('TINYMCEPLUGIN_BAD_BROWSERS') ||
+    my $ua = Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_BAD_BROWSERS') ||
       '(?i-xsm:Konqueror|Opera)';
     return 'Unsupported browser: '.$query->user_agent()
       if $ua && $query->user_agent() && $query->user_agent() =~ /$ua/;
@@ -84,18 +84,18 @@ sub beforeEditHandler {
     my $mess = _notAvailable();
     if ($mess) {
         if (($mess !~ /^Disabled/ || DEBUG) &&
-              defined &TWiki::Func::setPreferencesValue) {
-            TWiki::Func::setPreferencesValue(
+              defined &Foswiki::Func::setPreferencesValue) {
+            Foswiki::Func::setPreferencesValue(
                 'EDITOR_MESSAGE',
                 'WYSIWYG could not be started: '.$mess);
         }
         return;
     }
-    if (defined &TWiki::Func::setPreferencesValue) {
-        TWiki::Func::setPreferencesValue('EDITOR_HELP', 'TinyMCEQuickHelp');
+    if (defined &Foswiki::Func::setPreferencesValue) {
+        Foswiki::Func::setPreferencesValue('EDITOR_HELP', 'TinyMCEQuickHelp');
     }
 
-    my $init = TWiki::Func::getPreferencesValue('TINYMCEPLUGIN_INIT')
+    my $init = Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_INIT')
       || <<'HERE';
 '
 HERE
@@ -112,19 +112,19 @@ HERE
         $extras = 'MSIE';
     }
     if ($extras) {
-        $extras = TWiki::Func::getPreferencesValue(
+        $extras = Foswiki::Func::getPreferencesValue(
             'TINYMCEPLUGIN_INIT_'.$extras);
         if (defined $extras) {
             $init = join(',', (split(',',$init), split(',',$extras)));
         }
     }
 
-    require TWiki::Plugins::WysiwygPlugin;
+    require Foswiki::Plugins::WysiwygPlugin;
 
-    $mess = TWiki::Plugins::WysiwygPlugin::notWysiwygEditable($_[0]);
+    $mess = Foswiki::Plugins::WysiwygPlugin::notWysiwygEditable($_[0]);
     if ($mess) {
-        if (defined &TWiki::Func::setPreferencesValue) {
-            TWiki::Func::setPreferencesValue(
+        if (defined &Foswiki::Func::setPreferencesValue) {
+            Foswiki::Func::setPreferencesValue(
                 'EDITOR_MESSAGE',
                 'WYSIWYG could not be started: '.$mess);
         }
@@ -132,7 +132,7 @@ HERE
     }
 
     my $USE_SRC = '';
-    if (TWiki::Func::getPreferencesValue('TINYMCEPLUGIN_DEBUG')) {
+    if (Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_DEBUG')) {
         $USE_SRC = '_src';
     }
 
@@ -142,22 +142,22 @@ HERE
     my $pluginURL = '%PUBURL%/%SYSTEMWEB%/TinyMCEPlugin';
     my $tmceURL = $pluginURL.'/tinymce/jscripts/tiny_mce';
     # expand and URL-encode the init string
-    my $metainit = TWiki::Func::expandCommonVariables($init);
+    my $metainit = Foswiki::Func::expandCommonVariables($init);
     $metainit =~ s/([^0-9a-zA-Z-_.:~!*'\/%])/'%'.sprintf('%02x',ord($1))/ge;
     my $behaving;
     eval {
-        require TWiki::Contrib::BehaviourContrib;
-        if (defined(&TWiki::Contrib::BehaviourContrib::addHEAD)) {
-            TWiki::Contrib::BehaviourContrib::addHEAD();
+        require Foswiki::Contrib::BehaviourContrib;
+        if (defined(&Foswiki::Contrib::BehaviourContrib::addHEAD)) {
+            Foswiki::Contrib::BehaviourContrib::addHEAD();
             $behaving = 1;
         }
     };
     unless ($behaving) {
-        TWiki::Func::addToHEAD(
+        Foswiki::Func::addToHEAD(
             'BEHAVIOURCONTRIB',
             '<script type="text/javascript" src="%PUBURLPATH%/%SYSTEMWEB%/BehaviourContrib/behaviour.js"></script>');
     }
-    TWiki::Func::addToHEAD('tinyMCE', <<SCRIPT);
+    Foswiki::Func::addToHEAD('tinyMCE', <<SCRIPT);
 <meta name="TINYMCEPLUGIN_INIT" content="$metainit" />
 <script language="javascript" type="text/javascript" src="$tmceURL/tiny_mce$USE_SRC.js"></script>
 <script language="javascript" type="text/javascript" src="$pluginURL/twiki_tiny$USE_SRC.js"></script>
@@ -165,7 +165,7 @@ HERE
 SCRIPT
 
     # See %SYSTEMWEB%.IfStatements for a description of this context id.
-    TWiki::Func::getContext()->{textareas_hijacked} = 1;
+    Foswiki::Func::getContext()->{textareas_hijacked} = 1;
 }
 
 1;

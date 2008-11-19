@@ -3,10 +3,10 @@
 BEGIN {
     unshift @INC, split( /:/, $ENV{TWIKI_LIBS} );
 }
-use TWiki::Contrib::Build;
+use Foswiki::Contrib::Build;
 
 # Create the build object
-$build = new TWiki::Contrib::Build('TinyMCEPlugin');
+$build = new Foswiki::Contrib::Build('TinyMCEPlugin');
 
 # Set the details of the repository for uploads.
 # This can be any web on any accessible TWiki installation.
