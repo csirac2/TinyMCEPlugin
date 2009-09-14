@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+use strict;
+
 BEGIN {
   foreach my $pc (split(/:/, $ENV{FOSWIKI_LIBS})) {
     unshift @INC, $pc;
@@ -8,7 +10,7 @@ BEGIN {
 
 use Foswiki::Contrib::Build;
 
-$build = new Foswiki::Contrib::Build( "TinyMCEPlugin" );
+my $build = new Foswiki::Contrib::Build( "TinyMCEPlugin" );
 $build->build($build->{target});
 
 
