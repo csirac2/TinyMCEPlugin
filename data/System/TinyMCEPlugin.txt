@@ -178,6 +178,11 @@ Below is the default configuration. If it is to be modified, it should be copied
 }%.css,%PUBURLPATH%/%SYSTEMWEB%/SkinTemplates/base.css,%FOSWIKI_STYLE_URL%,%FOSWIKI_COLORS_URL%"
 %ENDSECTION{"TINYMCEPLUGIN_INIT"}%
 </verbatim>
+JSON:
+<verbatim class="js">%STARTSECTION{"TINYMCEPLUGIN_INIT_JS"}%<literal>FoswikiTiny.init = {%INCLUDE{
+  "%TOPIC%"
+  section="TINYMCEPLUGIN_INIT"
+}% };%ENDSECTION{"TINYMCEPLUGIN_INIT_JS"}%</literal></verbatim>
 %ENDTWISTY%
 
 Example:

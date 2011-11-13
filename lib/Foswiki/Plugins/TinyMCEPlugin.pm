@@ -112,7 +112,10 @@ sub beforeEditHandler {
     my $initTopic =
       Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_INIT_TOPIC')
       || $Foswiki::cfg{SystemWebName} . '.TinyMCEPlugin';
-    my $init = Foswiki::Func::getPreferencesValue('TINYMCEPLUGIN_INIT')
+    my ($initTopicObj) =
+      Foswiki::Func::readTopic(
+        Foswiki::Func::normalizeWebTopicName($initTopic) );
+    my $init = $initTopicObj->getPreference('TINYMCEPLUGIN_INIT')
       || Foswiki::Func::expandCommonVariables(
         '%INCLUDE{"'
           . $initTopic
@@ -170,6 +173,19 @@ sub beforeEditHandler {
     # the textarea content from TML to HTML.
     my $pluginURL = '%PUBURLPATH%/%SYSTEMWEB%/TinyMCEPlugin';
     my $tmceURL   = $pluginURL . '/tinymce/jscripts/tiny_mce';
+    my $initURL   = <<'HERE';
+%SCRIPTURLPATH{"view"}%/%IF{
+    "defined 'TINYMCEPLUGIN_INIT_TOPIC'"
+    then="%TINYMCEPLUGIN_INIT_TOPIC%"
+    else="%SYSTEMWEB%/TinyMCEPlugin"
+}%?skin=text;contenttype=text/plain;section=TINYMCEPLUGIN_INIT_JS;v=
+HERE
+    chomp($initURL);
+    my $rev = $initTopicObj->getRevisionInfo()->{version};
+    if ( !defined $rev ) {
+        $rev = time();
+    }
+    $initURL .= $rev;
 
     # URL-encode the version number to include in the .js URLs, so that
     # the browser re-fetches the .js when this plugin is upgraded.
@@ -189,10 +205,7 @@ sub beforeEditHandler {
     my $scripts = <<"SCRIPT";
 <script type="text/javascript" src="$tmceURL/tiny_mce$USE_SRC.js?v=$encodedVersion"></script>
 <script type="text/javascript" src="$pluginURL/foswiki_tiny$USE_SRC.js?v=$encodedVersion"></script>
-<script type="text/javascript">
-FoswikiTiny.init = {
-  $init
-};</script>
+<script type="text/javascript" src="$initURL"></script>
 <script type="text/javascript" src="$pluginURL/foswiki$USE_SRC.js?v=$encodedVersion"></script>
 SCRIPT
 
